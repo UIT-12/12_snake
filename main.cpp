@@ -5,12 +5,14 @@
 // ----------------------------------------------------------------------------
 using namespace std;
 // ----------------------------------------------------------------------------
-void gotoxy( int column, int line );
-
 struct Point
 {
     int x,y;
 };
+// ----------------------------------------------------------------------------
+int get_input();
+void enable_special_character();
+void gotoxy( int column, int line );
 // ----------------------------------------------------------------------------
 class CONRAN
 {
@@ -30,7 +32,7 @@ public:
         for (int i = 0; i < DoDai; i++)
 		{
             gotoxy(A[i].x,A[i].y);
-            cout<<"X";
+            cout<<"▄";
         }
     }
     void DiChuyen(int Huong)
@@ -43,9 +45,10 @@ public:
         if (Huong==3) A[0].y = A[0].y - 1;
     }
 };
-
+// ----------------------------------------------------------------------------
 int main()
 {
+	enable_special_character();
     CONRAN r;
     int Huong = 0;
     char t;
@@ -68,11 +71,22 @@ int main()
 	
     return 0;
 }
-
+// ----------------------------------------------------------------------------
 void gotoxy( int column, int line )
 {
 	COORD coord;
 	coord.X = column;
 	coord.Y = line;
 	SetConsoleCursorPosition(GetStdHandle( STD_OUTPUT_HANDLE ),coord);
+}
+
+void enable_special_character()
+{
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE) return;
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode)) return;
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hOut, dwMode);
+    SetConsoleOutputCP(CP_UTF8);
 }
