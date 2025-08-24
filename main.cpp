@@ -7,31 +7,44 @@
 // ----------------------------------------------------------------------------
 using namespace std;
 // ----------------------------------------------------------------------------
-int game_state = 0;
+const int ROW = 42;
+const int COL = 80;
+const std::string cell = "▄";
+const std::string HIDE_CURSOR = "\033[?25l";
+const std::string HOME = "\033[H";
+const std::string RESET_COLOR = "\033[0m\n";
 // ----------------------------------------------------------------------------
 struct Point
 {
     int x,y;
 };
+
 struct RGB
 {
 	int r,g,b;
 };
-const int ROW = 42;
-const int COL = 80;
+
+enum direction
+{
+	LEFT,
+	RIGHT,
+	UP,
+	DOWN
+};
+
+int game_state = 0;
 // ----------------------------------------------------------------------------
 int get_input();
 void enable_special_character();
-void gotoxy( int column, int line );
 void show_game();
 void show_menu();
+std::string get_bg_code(int r, int g, int b);
+std::string get_fg_code(int r, int g, int b);
 // ----------------------------------------------------------------------------
 class Board
 {
 public:
-	const std::string item = "▄";	// y0 = bg, y1 = fg
 	RGB board[ROW][COL];
-	bool active_board[ROW][COL];
 
 	Board()
 	{
@@ -40,7 +53,6 @@ public:
 				board[y][x].r = 255;
 				board[y][x].g = 255;
 				board[y][x].b = 255;
-				active_board[y][x] = false;
 			}
 		}
 	}
@@ -66,87 +78,79 @@ public:
 		board[src.y][src.x].g = color.g;
 		board[src.y][src.x].b = color.b;
 	}
+	
 	void render()
 	{
-		std::stringstream frameBuffer;
-		frameBuffer << "\033[H";
+		std::stringstream frame_buffer;
+		frame_buffer << HOME;
 		for (int row = 0; row < ROW; row+=2) {
 			for (int col = 0; col < COL; col++) {
-				frameBuffer << "\033[48;2;" << std::to_string(board[row][col].r) << ";" << std::to_string(board[row][col].g) << ";" << std::to_string(board[row][col].b) << "m" << "\033[38;2;" << std::to_string(board[row+1][col].r) << ";" << std::to_string(board[row+1][col].g) << ";" << std::to_string(board[row+1][col].b) << "m" << item; 
+				frame_buffer << get_bg_code(board[row][col].r, board[row][col].g, board[row][col].b);
+				frame_buffer << get_fg_code(board[row+1][col].r, board[row+1][col].g, board[row+1][col].b);
+				frame_buffer << cell; 
 			}
-			frameBuffer << "\033[0m\n";
+			frame_buffer << RESET_COLOR;
 		}
-		std::cout << frameBuffer.str();
+		std::cout << frame_buffer.str();
 		std::cout.flush();
 	}
 };
+
 class CONRAN
 {
 public:
-    struct Point A[100];
-	Board game_board;
+    Board game_board;
+	struct Point A[100];
 	Point old;
     int DoDai;
+	int speed;
 	
     CONRAN()
 	{
         DoDai = 3;
+		speed = 200;
         A[0].x = 12; A[0].y = 10;
         A[1].x = 11; A[1].y = 10;
         A[2].x = 10; A[2].y = 10;
 		old.x = -1;
 		old.y = -1;
     }
+	
     void Ve()
 	{
         for (int i = 0; i < DoDai; i++)
 		{
-			if (game_board.active_board[A[i].y][A[i].x]) continue;
 			game_board.update_board(A[i],0);
-			game_board.active_board[A[i].y][A[i].x] = true;
         }
+		if (old.x != -1)
+			game_board.update_board(old,1);
 		game_board.render();
     }
-	void Update()
-	{
-		if (game_board.active_board[A[0].y][A[0].x] == false) 
-		{
-			game_board.update_board(A[0],0);
-			game_board.active_board[A[0].y][A[0].x] = true;
-		}
-		
-		if (game_board.active_board[old.y][old.x]) 
-		{
-			game_board.update_board(old,1);
-			game_board.active_board[old.y][old.x] = false;
-		}
-		game_board.render();
-	}
-    void DiChuyen(int Huong)
+	
+    void DiChuyen(direction dir)
 	{
 		old.x = A[DoDai-1].x;
 		old.y = A[DoDai-1].y;
         for (int i = DoDai-1; i>0;i--)
             A[i] = A[i-1];
-        if (Huong==0)
+		switch (dir)
 		{
-			A[0].x = A[0].x + 1;
-			if (A[0].x >= COL) A[0].x = 0;
-		}
-		if (Huong==1)
-		{
-			A[0].y = A[0].y + 1;
-			if (A[0].y >= ROW) A[0].y = 0;
-		}
-        if (Huong==2)
-		{
-			A[0].x = A[0].x - 1;
-			if (A[0].x < 0) A[0].x = COL-1;
-		}
-        if (Huong==3)
-		{
-			A[0].y = A[0].y - 1;
-			if (A[0].y < 0) A[0].y = ROW-1;
+			case UP:
+				A[0].y = A[0].y - 1;
+				if (A[0].y < 0) A[0].y = ROW-1;
+				break;
+			case DOWN:
+				A[0].y = A[0].y + 1;
+				if (A[0].y >= ROW) A[0].y = 0;
+				break;
+			case LEFT:
+				A[0].x = A[0].x - 1;
+				if (A[0].x < 0) A[0].x = COL-1;
+				break;
+			default: 
+				A[0].x = A[0].x + 1;
+				if (A[0].x >= COL) A[0].x = 0;
+				break;
 		}
     }
 };
@@ -161,13 +165,15 @@ int main()
     return 0;
 }
 // ----------------------------------------------------------------------------
-void gotoxy( int column, int line )
-{
-	COORD coord;
-	coord.X = column;
-	coord.Y = line;
-	SetConsoleCursorPosition(GetStdHandle( STD_OUTPUT_HANDLE ),coord);
-}
+std::string get_bg_code(int r, int g, int b)
+	{
+		return "\033[48;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m";
+	}
+	
+	std::string get_fg_code(int r, int g, int b)
+	{
+		return "\033[38;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m";
+	}
 
 void enable_special_character()
 {
@@ -189,8 +195,6 @@ void show_menu()
 	std::cout.flush();
 	if (name == "abc")
 	{
-		Sleep(2000);
-		system("cls");
 		game_state=1;
 		show_game();
 	}
@@ -198,42 +202,34 @@ void show_menu()
 
 void show_game()
 {
-	std::cout << "\033[?25l";
+	std::cout << HIDE_CURSOR;
 	CONRAN r;
     int Huong = 0;
+	direction dir = RIGHT;
     char t;
-	auto now = std::chrono::high_resolution_clock::now();
-
-    // Cast the duration since the epoch to milliseconds
-    auto duration = now.time_since_epoch();
-    long long prev = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-	system("cls");
-	r.Ve();
+	auto last_time = std::chrono::high_resolution_clock::now();
+	
 	while (game_state==1)
 	{
+		r.Ve();
         if (kbhit())
 		{
             t = getch();
-            if (t=='a') Huong = 2;
-            if (t=='w') Huong = 3;
-            if (t=='d') Huong = 0;
-            if (t=='s') Huong = 1;
+            if (t=='a') dir = LEFT;
+            if (t=='w') dir = UP;
+            if (t=='d') dir = RIGHT;
+            if (t=='s') dir = DOWN;
 			if (t=='q') game_state = 0;
 			while (_kbhit()) {
 				_getch(); // Read and discard the character
 			}
         }
-        
-		auto nows = std::chrono::high_resolution_clock::now();
-
-		// Cast the duration since the epoch to milliseconds
-		
-		long long noow = std::chrono::duration_cast<std::chrono::milliseconds>(nows.time_since_epoch()).count();
-		if (noow - prev >= 300)
+        auto current_time = std::chrono::high_resolution_clock::now();
+		double delta_time = std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(current_time - last_time).count();
+		if (delta_time >= r.speed)
 		{
-			r.DiChuyen(Huong);
-			prev = noow;
+			r.DiChuyen(dir);
+			last_time = current_time;
 		}
-        r.Update();
     }
 }
