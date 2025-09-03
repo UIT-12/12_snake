@@ -65,8 +65,29 @@ KeyInput Game::getKey()
     return res;
 }
 
+/*
+ * hàm kiểm tra va chạm
+ *
+ * nếu đầu rắn chạm tường hoặc tự chạm bản thân thì chuyển trạng thái game thành GAME_OVER
+ */
 void Game::checkCollision(const Point& point)
 {
+    if (point.x < 0 || point.x >= BOARD_WIDTH || point.y < 0 || point.y >= BOARD_HEIGHT)
+    {
+        currentState = State::GAME_OVER;
+        return;
+    }
+
+    if (canvas[point.y][point.x] == CELL_TYPE::WALL)
+    {
+        currentState = State::GAME_OVER;
+        return;
+    }
+
+    if (snake->checkSelfCollision())
+    {
+        currentState = State::GAME_OVER;
+    }
 }
 
 /*
