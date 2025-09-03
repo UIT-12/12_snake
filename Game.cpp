@@ -595,8 +595,209 @@ void Game::resetGame()
     inputQueue.clear();
 }
 
+/*
+ * hàm việt hóa các ký tự tiếng việt trong các trạng thái khác nhau
+ *
+ * PAUSED: hiển thị chữ "Tạm Dừng"
+ * MENU: hiển thị các lựa chọn trong menu
+ * PLAYING: hiển thị tiêu đề "Điểm"
+ * GAME_OVER: hiển thị thông tin kết thúc trò chơi, nếu người chơi có điểm và đủ để vào bảng điểm cao thì yêu cầu nhập tên
+ * HIGH_SCORES: hiển thị tiêu đề "Điểm Cao"
+ *
+ * sử dụng hàm drawChar của Renderer để vẽ từng ký tự có dấu
+ */
 void Game::vietSub()
 {
+    switch (currentState)
+    {
+    case State::PAUSED:
+        renderer->drawChar("ạ", { BOARD_WIDTH / 2 - 4, BOARD_HEIGHT / 2 - 1 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ừ", { BOARD_WIDTH / 2, BOARD_HEIGHT / 2 - 1 }, DEFAULT_HIGHLIGHT_COLOR);
+        break;
+    case State::MENU:
+    {
+        Color color = (0 == menuSelection) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("ò", { 19, 22 }, color);
+        renderer->drawChar("ơ", { 23, 22 }, color);
+        renderer->drawChar("ớ", { 27, 22 }, color);
+        color = (1 == menuSelection) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("Đ", { 17, 24 }, color);
+        renderer->drawChar("ể", { 19, 24 }, color);
+        color = (2 == menuSelection) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("Đ", { 17, 26 }, color);
+        renderer->drawChar("ộ", { 18, 26 }, color);
+        renderer->drawChar("ó", { 22, 26 }, color);
+        color = (3 == menuSelection) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("ớ", { 19, 28 }, color);
+        renderer->drawChar("ệ", { 25, 28 }, color);
+        color = (4 == menuSelection) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("á", { 20, 30 }, color);
+        break;
+    }
+    case State::PLAYING:
+        renderer->drawChar("Đ", { 1, 0 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("ể", { 3, 0 }, DEFAULT_TITLE_COLOR);
+        break;
+    case State::GAME_OVER:
+    {
+        int xOffset = 25;
+        int yOffset = 20;
+        std::string score = "Diem: " + std::to_string(scoreManager.score);
+        renderer->drawChar("ò", { xOffset + 7, yOffset }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ơ", { xOffset + 11, yOffset }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ế", { xOffset + 15, yOffset }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ú", { xOffset + 20, yOffset }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("Đ", { (int)(BOARD_WIDTH / 2 - score.length() / 2 - 2), yOffset + 4 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ể", { (int)(BOARD_WIDTH / 2 - score.length() / 2), yOffset + 4 }, DEFAULT_TEXT_COLOR);
+        if (scoreManager.score > 0 && (scoreManager.highScore.size() < 10 || scoreManager.score > scoreManager.highScore.back().second))
+        {
+            renderer->drawChar("ỷ", { xOffset + 1, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ụ", { xOffset + 4, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ớ", { xOffset + 8, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ậ", { xOffset + 14, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ê", { xOffset + 18, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ủ", { xOffset + 22, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ạ", { xOffset + 26, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+        }
+        else
+        {
+            renderer->drawChar("ấ", { xOffset + 3, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("đ", { xOffset + 12, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ể", { xOffset + 13, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ở", { xOffset + 17, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+            renderer->drawChar("ạ", { xOffset + 20, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+        }
+        break;
+    }
+    case State::HIGH_SCORES:
+    {
+        int x_offset = 15;
+        int y_offset = 22;
+        renderer->drawChar("ể", { x_offset + 4, y_offset - 2 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("Đ", { x_offset + 2, y_offset - 2 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("ở", { x_offset + 4, y_offset + 14 }, DEFAULT_SELECTED_COLOR);
+        renderer->drawChar("ạ", { x_offset + 7, y_offset + 14 }, DEFAULT_SELECTED_COLOR);
+        if (scoreManager.highScore.empty())
+        {
+            renderer->drawChar("ư", { x_offset + 4, y_offset + 6 }, DEFAULT_TEXT_COLOR);
+            renderer->drawChar("ó", { x_offset + 8, y_offset + 6 }, DEFAULT_TEXT_COLOR);
+            renderer->drawChar("đ", { x_offset + 10, y_offset + 6 }, DEFAULT_TEXT_COLOR);
+            renderer->drawChar("ể", { x_offset + 12, y_offset + 6 }, DEFAULT_TEXT_COLOR);
+        }
+        break;
+    }
+    case State::DIFFICULTY_SELECTION:
+    {
+        int x_offset = 15;
+        int y_offset = 22;
+        /*việt hóa*/ renderer->drawChar("Đ", { x_offset + 2, y_offset - 2 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("ộ", { x_offset + 3, y_offset - 2 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("ó", { x_offset + 7, y_offset - 2 }, DEFAULT_TITLE_COLOR);
+        Color color = (1 == difficultSelect) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("Đ", { x_offset + 2, y_offset + 2 }, color);
+        renderer->drawChar("ơ", { x_offset + 3, y_offset + 2 }, color);
+        renderer->drawChar("ả", { x_offset + 8, y_offset + 2 }, color);
+        color = (2 == difficultSelect) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("ì", { x_offset + 9, y_offset + 4 }, color);
+        color = (3 == difficultSelect) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawChar("ó", { x_offset + 4, y_offset + 6 }, color);
+        break;
+    }
+    case State::ABOUT:
+    {
+        int x_offset = 10;
+        int y_offset = 4;
+        renderer->drawChar("ớ", { x_offset + 2, y_offset + 4 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("ệ", { x_offset + 8, y_offset + 4 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("ò", { x_offset + 13, y_offset + 4 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("ơ", { x_offset + 17, y_offset + 4 }, DEFAULT_TITLE_COLOR);
+        renderer->drawChar("à", { x_offset + 2, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ừ", { x_offset + 6, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ạ", { x_offset + 11, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("đ", { x_offset + 14, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ế", { x_offset + 15, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ớ", { x_offset + 19, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ế", { x_offset + 24, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ớ", { x_offset + 28, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ắ", { x_offset + 32, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ă", { x_offset + 36, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ồ", { x_offset + 40, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ụ", { x_offset + 1, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ê", { x_offset + 6, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ủ", { x_offset + 10, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ạ", { x_offset + 14, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ấ", { x_offset + 18, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("đ", { x_offset + 21, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ơ", { x_offset + 22, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ả", { x_offset + 27, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("Đ", { x_offset, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ề", { x_offset + 2, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ể", { x_offset + 8, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ắ", { x_offset + 12, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("đ", { x_offset + 15, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ă", { x_offset + 19, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("à", { x_offset + 23, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ề", { x_offset + 30, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ồ", { x_offset + 34, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("à", { x_offset + 38, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ố", { x_offset + 43, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ă", { x_offset + 4, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("đ", { x_offset + 7, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ư", { x_offset + 8, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ợ", { x_offset + 9, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ồ", { x_offset + 13, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ắ", { x_offset + 18, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ủ", { x_offset + 22, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ạ", { x_offset + 26, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ẽ", { x_offset + 30, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("à", { x_offset + 33, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("à", { x_offset + 37, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ơ", { x_offset + 46, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ộ", { x_offset + 50, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ú", { x_offset + 55, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ư", { x_offset + 2, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ã", { x_offset + 7, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ẩ", { x_offset + 11, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ậ", { x_offset + 16, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ớ", { x_offset + 20, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ư", { x_offset + 24, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ờ", { x_offset + 25, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("à", { x_offset + 30, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("í", { x_offset + 34, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ả", { x_offset + 39, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("â", { x_offset + 44, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ì", { x_offset + 48, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("á", { x_offset + 1, y_offset + 22 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("đ", { x_offset + 5, y_offset + 22 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ề", { x_offset + 7, y_offset + 22 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ể", { x_offset + 13, y_offset + 22 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ử", { x_offset + 1, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ụ", { x_offset + 4, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("í", { x_offset + 10, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ũ", { x_offset + 14, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ê", { x_offset + 18, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("đ", { x_offset + 21, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ể", { x_offset + 22, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ể", { x_offset + 31, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ử", { x_offset + 1, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ụ", { x_offset + 4, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("í", { x_offset + 10, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("đ", { x_offset + 17, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ể", { x_offset + 18, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ạ", { x_offset + 21, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ừ", { x_offset + 25, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ò", { x_offset + 31, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ơ", { x_offset + 35, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+        renderer->drawChar("ú", { x_offset + 2, y_offset + 30 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ạ", { x_offset + 6, y_offset + 30 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ơ", { x_offset + 11, y_offset + 30 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawChar("ẻ", { x_offset + 24, y_offset + 30 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawText("> Tro Lai", { x_offset, y_offset + 34 }, DEFAULT_SELECTED_COLOR);
+        renderer->drawChar("ở", { x_offset + 4, y_offset + 34 }, DEFAULT_SELECTED_COLOR);
+        renderer->drawChar("ạ", { x_offset + 7, y_offset + 34 }, DEFAULT_SELECTED_COLOR);
+        break;
+    }
+    }
 }
 
 /*
