@@ -22,7 +22,7 @@ double Game::timeNow()
 
 KeyInput Game::getKey()
 {
-	return KeyInput();
+	return KeyInput::ENTER;
 }
 
 void Game::checkCollision(const Point& point)
