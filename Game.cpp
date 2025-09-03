@@ -113,12 +113,53 @@ void Game::handleMenuInput(KeyInput key)
     }
 }
 
+/*
+ * hàm xử lý input trong màn hình thay đổi độ khó
+ *
+ * phím mũi tên lên và xuống để thay đổi lựa chọn độ khó (difficultSelect) và không tác động đến độ khó game (currentDifficulty)
+ * phím enter để lưu lựa chọn độ khó vào currentDifficulty để thay đổi tốc độ chơi game thực và trở lại màn hình menu
+ * phím esc để đổi trạng thái thành menu và gán lại giá trị độ khó gốc cho difficultSelect để người dùng biết được độ khó mặc định
+ */
 void Game::handleDifficultSelectionInput(KeyInput key)
 {
+    switch (key)
+    {
+    case KeyInput::UP:
+        if (--difficultSelect == 0) difficultSelect = 3;
+        break;
+    case KeyInput::DOWN:
+        if (++difficultSelect == 4) difficultSelect = 1;
+        break;
+    case KeyInput::ENTER:
+        currentDifficulty = difficultSelect;
+        currentState = State::MENU;
+        break;
+    case KeyInput::ESC:
+        difficultSelect = currentDifficulty;
+        currentState = State::MENU;
+    }
 }
 
+/*
+ * xử lý input trong trạng thái chơi game (PLAYING)
+ *
+ * người dùng ấn phím mũi tên thì sẽ được lưu vào bộ nhớ tạm (inputQueue)
+ *      bộ nhớ sẽ lưu lại 3 phím nhấn mới nhất từ người dùng
+ *      nhằm fix lỗi mất phím khi người dùng ấn quá nhanh và hệ thống xử lý không kịp
+ *      đồng thời chỉ lưu trữ 3 phím để người dùng có thể dự đoán được hướng đi của rắn
+ *          nếu lưu trữ không giới hạn thì nếu người dùng ấn quá nhiều phím, thì rắn sẽ đi đến khi nào xử lý hết phím mới điều khiển tiếp được)
+ *
+ * người dùng nhấn phím ESC thì sẽ đưa sang trạng thái tạm dừng
+ *
+ */
 void Game::handlePlayingInput(KeyInput key)
 {
+    if (key == KeyInput::UP) inputQueue.push_back(Direction::UP);
+    if (key == KeyInput::DOWN) inputQueue.push_back(Direction::DOWN);
+    if (key == KeyInput::LEFT) inputQueue.push_back(Direction::LEFT);
+    if (key == KeyInput::RIGHT) inputQueue.push_back(Direction::RIGHT);
+    while (inputQueue.size() > 3) inputQueue.pop_front();
+    if (key == KeyInput::ESC) currentState = State::PAUSED;
 }
 
 void Game::updateLogic(double deltaTime)
