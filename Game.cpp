@@ -483,20 +483,113 @@ void Game::renderAbout()
 }
 
 
+/*
+ * hàm đặt lại các giá trị trong game về mặc định
+ *
+ * xóa rắn và bảng cũ nếu có
+ * tạo rắn mới ở giữa bảng
+ * tạo bảng mới với kích thước đã định
+ * điền rắn vào bảng
+ * sinh thức ăn mới và điền vào bảng
+ * hủy điểm cộng nếu có
+ * đặt lại điểm người chơi về 0
+ * đặt lại tốc độ về tốc độ ban đầu
+ * xóa bộ nhớ tạm hướng đi của người dùng
+ */
 void Game::resetGame()
 {
+    if (snake) delete snake;
+    snake = new Snake(BOARD_WIDTH / 2, BOARD_HEIGHT / 2);
+
+    canvas.resize(BOARD_HEIGHT, std::vector<CELL_TYPE>(BOARD_WIDTH, CELL_TYPE::NONE));
+    for (int x = 0; x < BOARD_WIDTH; ++x)
+        for (int y = 0; y < BOARD_HEIGHT; ++y)
+            canvas[y][x] = CELL_TYPE::NONE;
+
+    for (int x = 0; x < BOARD_WIDTH; ++x)
+    {
+        canvas[2][x] = CELL_TYPE::WALL;					// Tường trên
+        canvas[0][x] = CELL_TYPE::WALL;					// Tường trên
+        canvas[1][x] = CELL_TYPE::WALL;					// Tường trên
+        canvas[BOARD_HEIGHT - 1][x] = CELL_TYPE::WALL;	// Tường dưới
+    }
+    for (int y = 2; y < BOARD_HEIGHT; ++y)
+    {
+        canvas[y][0] = CELL_TYPE::WALL;					// Tường trái
+        canvas[y][BOARD_WIDTH - 1] = CELL_TYPE::WALL;		// Tường phải
+    }
+
+    for (const auto& segment : snake->getBody())
+    {
+        canvas[segment.y][segment.x] = CELL_TYPE::SNAKE;
+    }
+    canvas[snake->getBody().front().y][snake->getBody().front().x] = CELL_TYPE::SNAKE_HEAD;
+
+    food->spawnFood(canvas);
+    canvas[food->getFoodPosition().y][food->getFoodPosition().x] = CELL_TYPE::POINT;
+    food->deactivateBonus();
+
+    scoreManager.score = 0;
+    currentSpeed = minSpeed;
+    inputQueue.clear();
 }
 
 void Game::vietSub()
 {
 }
 
+/*
+ * hàm ghi dữ liệu điểm cao vào file nhị phân
+ *
+ * nếu không mở được file thì trả về false
+ * ghi từng cặp tên và điểm vào file
+ * trả về true nếu ghi thành công
+ */
 bool Game::writeDataToBinaryFile(const std::string& filename, const std::vector<std::pair<std::string, int>>& data)
 {
-	return false;
+    std::ofstream outputFile(filename, std::ios::binary);
+    if (!outputFile.is_open()) {
+        std::cerr << "Error: Could not open file '" << filename << "' for binary writing." << std::endl;
+        return false;
+    }
+    for (const auto& entry : data) {
+        size_t nameLength = entry.first.length();
+        outputFile.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
+        outputFile.write(entry.first.c_str(), nameLength);
+        outputFile.write(reinterpret_cast<const char*>(&entry.second), sizeof(entry.second));
+    }
+    return true;
 }
 
+/*
+ * hàm đọc dữ liệu điểm cao từ file nhị phân
+ *
+ * nếu không mở được file thì trả về vector rỗng
+ * đọc từng cặp tên và điểm từ file
+ * trả về vector các cặp tên và điểm đã đọc được
+ */
 std::vector<std::pair<std::string, int>> Game::readDataFromBinaryFile(const std::string& filename)
 {
-	return std::vector<std::pair<std::string, int>>();
+    std::ifstream inputFile(filename, std::ios::binary);
+    std::vector<std::pair<std::string, int>> data;
+    if (!inputFile.is_open()) {
+        // Không cần hiển thị lỗi nếu file chưa tồn tại lần đầu
+        return data;
+    }
+    while (inputFile.peek() != EOF) {
+        size_t nameLength;
+        inputFile.read(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
+        if (inputFile.gcount() != sizeof(nameLength)) break;
+
+        std::string name(nameLength, '\0');
+        inputFile.read(&name[0], nameLength);
+        if (inputFile.gcount() != nameLength) break;
+
+        int score;
+        inputFile.read(reinterpret_cast<char*>(&score), sizeof(score));
+        if (inputFile.gcount() != sizeof(score)) break;
+
+        data.push_back({ name, score });
+    }
+    return data;
 }
