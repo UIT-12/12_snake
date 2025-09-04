@@ -1,4 +1,4 @@
-#include "Game.h"
+﻿#include "Game.h"
 
 void Game::gameLoop()
 {
@@ -53,8 +53,31 @@ void Game::updatePlayingLogic(double deltaTime)
 {
 }
 
+/*
+ * tùy trạng thái mà render các màn hình khác nhau
+ *
+ * xóa màn hình
+ * render các thành phần
+ * việt hóa các ký tự tiếng việt
+ * hiển thị nội dung vừa render lên màn hình
+ */
 void Game::render()
 {
+    renderer->clearScreen();
+    switch (currentState)
+    {
+    case State::MENU: renderMenu(); break;
+    case State::PLAYING: renderPlaying(); break;
+    case State::GAME_OVER: renderGameOver(); break;
+    case State::HIGH_SCORES: renderHighScores(); break;
+    case State::DIFFICULTY_SELECTION: renderDifficulty(); break;
+    case State::ABOUT: renderAbout(); break;
+    case State::PAUSED:
+        renderer->drawText("Tam Dung !", { BOARD_WIDTH / 2 - 5, BOARD_HEIGHT / 2 - 1 }, DEFAULT_HIGHLIGHT_COLOR);
+        break;
+    }
+    vietSub();
+    renderer->present();
 }
 
 void Game::renderMenu()
