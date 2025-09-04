@@ -117,12 +117,60 @@ void Game::renderPlaying()
     renderer->drawText("Diem: " + std::to_string(scoreManager.score), { 1, 0 }, DEFAULT_TITLE_COLOR);
 }
 
+/*
+ * render màn hình kết thúc
+ *
+ * hiển thị thông tin
+ * nếu người chơi có điểm và điểm đủ để vào bảng điểm cao thì yêu cầu nhập tên
+ */
 void Game::renderGameOver()
 {
+    int xOffset = 25;
+    int yOffset = 20;
+    std::string score = "Diem: " + std::to_string(scoreManager.score);
+    renderer->drawText("Tro choi ket thuc!", { xOffset + 5, yOffset }, DEFAULT_HIGHLIGHT_COLOR);
+    renderer->drawText(score, { (int)(BOARD_WIDTH / 2 - score.length() / 2 - 2), yOffset + 4 }, DEFAULT_TEXT_COLOR);
+    if (scoreManager.score > 0 && (scoreManager.highScore.size() < 10 || scoreManager.score > scoreManager.highScore.back().second))
+    {
+        renderer->drawText("Ky luc moi! Nhap ten cua ban: ", { xOffset, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+    }
+    else
+    {
+        renderer->drawText("Nhan ENTER de tro lai menu.", { xOffset + 1, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
+        renderer->drawText("ENTER", { xOffset + 6, yOffset + 24 }, DEFAULT_SELECTED_COLOR);
+    }
 }
 
+/*
+ * render thông tin điểm cao
+ * nếu chưa có điểm cao thì hiển thị thông báo
+ */
 void Game::renderHighScores()
 {
+    int x_offset = 15;
+    int y_offset = 22;
+    renderer->fillMenu();
+    renderer->drawText("Diem Cao", { x_offset + 2, y_offset - 2 }, DEFAULT_TITLE_COLOR);
+    if (scoreManager.highScore.empty())
+    {
+        renderer->drawText("Chua co diem cao", { x_offset + 2, y_offset + 6 }, DEFAULT_TEXT_COLOR);
+    }
+    else
+    {
+        Color textColor;
+        textColor.r = 255;
+        textColor.g = 25;
+        for (size_t i = 0; i < scoreManager.highScore.size(); ++i)
+        {
+            std::pair<std::string, int> hi = scoreManager.highScore[i];
+            renderer->drawText(std::to_string(i + 1) + ". " + hi.first, { x_offset + 2, y_offset + 2 + (int)i * 2 }, textColor);
+            renderer->drawText(": " + std::to_string(hi.second), { 17 + x_offset, y_offset + 2 + (int)i * 2 }, textColor);
+            textColor.g += 60;
+            textColor.b += 60;
+            if (i > 2) textColor = DEFAULT_TEXT_COLOR;
+        }
+    }
+    renderer->drawText("> Tro Lai", { x_offset, y_offset + 14 }, DEFAULT_SELECTED_COLOR);
 }
 
 void Game::renderDifficulty()
