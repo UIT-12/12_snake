@@ -80,12 +80,41 @@ void Game::render()
     renderer->present();
 }
 
+/*
+ * render màn hình menu
+ *
+ * render các lựa chọn lên màn hình, thay đổi lại màu nếu lựa chọn đó đang được chọn
+ */
 void Game::renderMenu()
 {
+    renderer->fillMenu();
+    std::vector<std::string> options = { "Tro Choi Moi", "Diem Cao", "Do Kho", "Gioi Thieu", "Thoat" };
+    for (size_t i = 0; i < options.size(); ++i)
+    {
+        std::string prefix = (i == menuSelection) ? "> " : "  ";
+        Color color = (i == menuSelection) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawText(prefix + options[i], { 15, 22 + (int)i * 2 }, color);
+    }
 }
 
+/*
+ * render màn hình chơi game
+ *
+ * vẽ các thành phần trong bảng lên màn hình
+ * ghi đè lên bonus point nếu có vì bonus dùng chung khối với point
+ * hiển thị điểm người chơi
+ */
 void Game::renderPlaying()
 {
+    // Vẽ bảng
+    for (int y = 0; y < BOARD_HEIGHT; ++y)
+        for (int x = 0; x < BOARD_WIDTH; ++x)
+            renderer->drawBlock({ x, y }, canvas[y][x]);
+
+    if (food->isBonusActive()) renderer->drawBlock(food->getBonusPosition(), CELL_TYPE::BONUS);
+    else canvas[food->getBonusPosition().y][food->getBonusPosition().x] = CELL_TYPE::NONE;
+
+    renderer->drawText("Diem: " + std::to_string(scoreManager.score), { 1, 0 }, DEFAULT_TITLE_COLOR);
 }
 
 void Game::renderGameOver()
