@@ -11,10 +11,41 @@ void Renderer::clearScreen()
 			screenBuffer[y][x] = DEFAULT_BG_COLOR;
 }
 
+/*
+ * hàm vẽ một khối tại vị trí cụ thể với màu cụ thể
+ *
+ * nếu vị trí y là số lẻ thì vẽ nửa trên của khối ở vị trí (x, y-1)
+ * vẽ nửa dưới của khối ở vị trí (x, y)
+ */
 void Renderer::drawBlock(const Point& position, CELL_TYPE type)
 {
-	return;
+	// Vẽ một khối tại vị trí cụ thể
+	Color color;
+	switch (type)
+	{
+	case CELL_TYPE::WALL:
+		color = DEFAULT_WALL_COLOR;
+		break;
+	case CELL_TYPE::SNAKE:
+		color = DEFAULT_SNAKE_COLOR;
+		break;
+	case CELL_TYPE::SNAKE_HEAD:
+		color = DEFAULT_SNAKE_HEAD_COLOR;
+		break;
+	case CELL_TYPE::POINT:
+		color = DEFAULT_FOOD_COLOR;
+		break;
+	case CELL_TYPE::BONUS:
+		color = DEFAULT_BONUS_COLOR;
+		break;
+	default:
+		color = DEFAULT_BG_COLOR;
+		break;
+	}
+	if (position.y % 2 != 0) screenBuffer[position.y - 1][position.x].character = color.character;
+	screenBuffer[position.y][position.x] = color;
 }
+
 
 /*
  * hàm vẽ một chuỗi ký tự tại vị trí cụ thể với màu cụ thể
