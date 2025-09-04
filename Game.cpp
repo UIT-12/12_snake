@@ -173,13 +173,56 @@ void Game::renderHighScores()
     renderer->drawText("> Tro Lai", { x_offset, y_offset + 14 }, DEFAULT_SELECTED_COLOR);
 }
 
+/*
+ * render màn hình lựa chọn độ khó
+ * thay đổi màu và thêm dấu ">" vào lựa chọn đang được chọn (difficultSelect)
+ */
 void Game::renderDifficulty()
 {
+    renderer->fillMenu();
+    int x_offset = 15;
+    int y_offset = 22;
+    std::vector<std::string> options = { "", "Don Gian", "Trung Binh", "Kho" };
+    renderer->drawText("Do Kho", { x_offset + 2, y_offset - 2 }, DEFAULT_TITLE_COLOR);
+
+    Color color;
+
+    for (size_t i = 1; i < options.size(); ++i)
+    {
+        std::string prefix = (i == difficultSelect) ? "> " : "  ";
+        color = (i == difficultSelect) ? DEFAULT_SELECTED_COLOR : DEFAULT_UNSELECTED_COLOR;
+        renderer->drawText(prefix + options[i], { x_offset, y_offset + (int)i * 2 }, color);
+    }
 }
 
+/*
+ * render thông tin giới thiệu trò chơi
+ *
+ */
 void Game::renderAbout()
 {
+    int x_offset = 10;
+    int y_offset = 4;
+    renderer->drawText("Gioi Thieu Tro Choi", { x_offset, y_offset + 4 }, DEFAULT_TITLE_COLOR);
+    renderer->drawText("Chao mung ban den voi the gioi ran san moi!", { x_offset, y_offset + 8 }, DEFAULT_HIGHLIGHT_COLOR);
+    renderer->drawText("Muc tieu cua ban rat don gian:", { x_offset, y_offset + 12 }, DEFAULT_HIGHLIGHT_COLOR);
+    renderer->drawText("Dieu khien ran di san cang nhieu moi cang tot.", { x_offset, y_offset + 14 }, DEFAULT_TEXT_COLOR);
+    renderer->drawText("Khi an duoc moi, ran cua ban se dai va nhanh hon mot chut.", { x_offset, y_offset + 16 }, DEFAULT_TEXT_COLOR);
+    renderer->drawText("Nhung hay can than voi tuong va chinh ban than minh.", { x_offset, y_offset + 18 }, DEFAULT_TEXT_COLOR);
+    renderer->drawText("Cach dieu khien:", { x_offset, y_offset + 22 }, DEFAULT_HIGHLIGHT_COLOR);
+    renderer->drawText("                                               D  A  W  S", { x_offset, y_offset + 24 }, DEFAULT_SELECTED_COLOR);
+    renderer->drawText("Su dung phim mui ten de di chuyen:  ,  ,  ,", { x_offset, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+    renderer->drawText("(", { x_offset + 46, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+    renderer->drawText(").", { x_offset + 57, y_offset + 24 }, DEFAULT_TEXT_COLOR);
+    renderer->drawChar("↓", { x_offset + 44, y_offset + 24 }, DEFAULT_SELECTED_COLOR);
+    renderer->drawChar("↑", { x_offset + 41, y_offset + 24 }, DEFAULT_SELECTED_COLOR);
+    renderer->drawChar("→", { x_offset + 38, y_offset + 24 }, DEFAULT_SELECTED_COLOR);
+    renderer->drawChar("←", { x_offset + 35, y_offset + 24 }, DEFAULT_SELECTED_COLOR);
+    renderer->drawText("Su dung phim ESC de tam dung tro choi.", { x_offset, y_offset + 26 }, DEFAULT_TEXT_COLOR);
+    renderer->drawText("ESC", { x_offset + 13, y_offset + 26 }, DEFAULT_SELECTED_COLOR);
+    renderer->drawText("Chuc ban choi game vui ve!", { x_offset, y_offset + 30 }, DEFAULT_HIGHLIGHT_COLOR);
 }
+
 
 void Game::resetGame()
 {
