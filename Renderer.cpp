@@ -16,14 +16,34 @@ void Renderer::drawBlock(const Point& position, CELL_TYPE type)
 	return;
 }
 
+/*
+ * hàm vẽ một chuỗi ký tự tại vị trí cụ thể với màu cụ thể
+ *
+ * nếu vị trí vượt quá kích thước bảng thì dừng vẽ
+ */
 void Renderer::drawText(const std::string& text, const Point& position, const Color& color)
 {
-	return;
+	// In văn bản tại vị trí cụ thể
+	for (int i = 0; i < text.length(); ++i)
+	{
+		if (position.x + i >= BOARD_WIDTH) return;
+		screenBuffer[position.y + 1][position.x + i] = color;
+		screenBuffer[position.y][position.x + i].character = text.substr(i, 1);
+		screenBuffer[position.y + 1][position.x + i].character = text.substr(i, 1);
+	}
 }
 
+/*
+ * hàm vẽ một ký tự tại vị trí cụ thể với màu cụ thể
+ *
+ * nếu vị trí vượt quá kích thước bảng thì dừng vẽ
+ */
 void Renderer::drawChar(const std::string& text, const Point& position, const Color& color)
 {
-	return;
+	if (position.x >= BOARD_WIDTH) return;
+	screenBuffer[position.y + 1][position.x] = color;
+	screenBuffer[position.y][position.x].character = text;
+	screenBuffer[position.y + 1][position.x].character = text;
 }
 
 /*
