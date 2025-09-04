@@ -26,9 +26,23 @@ void Renderer::drawChar(const std::string& text, const Point& position, const Co
 	return;
 }
 
+/*
+ * hàm điền hình nền menu vào screenBuffer
+ *
+ * sử dụng mảng 2D bg_menu_r, bg_menu_g, bg_menu_b để lấy giá trị màu tương ứng
+ */
 void Renderer::fillMenu()
 {
-	return;
+	// Vẽ menu
+	for (int y = 0; y < BOARD_HEIGHT; ++y)
+	{
+		for (int x = 0; x < BOARD_WIDTH; ++x)
+		{
+			screenBuffer[y][x].r = bg_menu_r[y][x];
+			screenBuffer[y][x].g = bg_menu_g[y][x];
+			screenBuffer[y][x].b = bg_menu_b[y][x];
+		}
+	}
 }
 
 /*
