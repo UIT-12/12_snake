@@ -113,8 +113,31 @@ void Game::handleMenuInput(KeyInput key)
     }
 }
 
+/*
+ * hàm xử lý input trong màn hình thay đổi độ khó
+ *
+ * phím mũi tên lên và xuống để thay đổi lựa chọn độ khó (difficultSelect) và không tác động đến độ khó game (currentDifficulty)
+ * phím enter để lưu lựa chọn độ khó vào currentDifficulty để thay đổi tốc độ chơi game thực và trở lại màn hình menu
+ * phím esc để đổi trạng thái thành menu và gán lại giá trị độ khó gốc cho difficultSelect để người dùng biết được độ khó mặc định
+ */
 void Game::handleDifficultSelectionInput(KeyInput key)
 {
+    switch (key)
+    {
+    case KeyInput::UP:
+        if (--difficultSelect == 0) difficultSelect = 3;
+        break;
+    case KeyInput::DOWN:
+        if (++difficultSelect == 4) difficultSelect = 1;
+        break;
+    case KeyInput::ENTER:
+        currentDifficulty = difficultSelect;
+        currentState = State::MENU;
+        break;
+    case KeyInput::ESC:
+        difficultSelect = currentDifficulty;
+        currentState = State::MENU;
+    }
 }
 
 void Game::handlePlayingInput(KeyInput key)
