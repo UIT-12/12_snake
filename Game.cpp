@@ -140,8 +140,26 @@ void Game::handleDifficultSelectionInput(KeyInput key)
     }
 }
 
+/*
+ * xử lý input trong trạng thái chơi game (PLAYING)
+ *
+ * người dùng ấn phím mũi tên thì sẽ được lưu vào bộ nhớ tạm (inputQueue)
+ *      bộ nhớ sẽ lưu lại 3 phím nhấn mới nhất từ người dùng
+ *      nhằm fix lỗi mất phím khi người dùng ấn quá nhanh và hệ thống xử lý không kịp
+ *      đồng thời chỉ lưu trữ 3 phím để người dùng có thể dự đoán được hướng đi của rắn
+ *          nếu lưu trữ không giới hạn thì nếu người dùng ấn quá nhiều phím, thì rắn sẽ đi đến khi nào xử lý hết phím mới điều khiển tiếp được)
+ *
+ * người dùng nhấn phím ESC thì sẽ đưa sang trạng thái tạm dừng
+ *
+ */
 void Game::handlePlayingInput(KeyInput key)
 {
+    if (key == KeyInput::UP) inputQueue.push_back(Direction::UP);
+    if (key == KeyInput::DOWN) inputQueue.push_back(Direction::DOWN);
+    if (key == KeyInput::LEFT) inputQueue.push_back(Direction::LEFT);
+    if (key == KeyInput::RIGHT) inputQueue.push_back(Direction::RIGHT);
+    while (inputQueue.size() > 3) inputQueue.pop_front();
+    if (key == KeyInput::ESC) currentState = State::PAUSED;
 }
 
 void Game::updateLogic(double deltaTime)
