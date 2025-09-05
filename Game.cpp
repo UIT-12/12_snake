@@ -162,8 +162,59 @@ void Game::handlePlayingInput(KeyInput key)
     if (key == KeyInput::ESC) currentState = State::PAUSED;
 }
 
+/*
+ * hàm cập nhật logic của trò chơi (nhận dữ liệu deltaTime để tính toán trong hàm updatePlayingLogic)
+ *
+ * nếu đang ở trạng thái chơi game (PLAYING) thì gọi hàm updatePlayingLogic
+ *
+ * nếu đang ở trạng thái kết thúc trò chơi (GAME_OVER):
+ *      nếu người chơi không có điểm thì không thực hiện gì cả
+ *      nếu bảng điểm cao chưa đầy hoặc điểm người chơi lớn hơn điểm cuối cùng thì:
+ *          lưu tên người dùng (tối đa 10 ký tự),
+ *          sắp xếp lại bảng điểm cao giảm dần,
+ *          xóa tên người chơi cuối nếu bảng đầy
+ *          chuyển sang trạng thái điểm cao để xem bảng điểm
+ *
+ */
 void Game::updateLogic(double deltaTime)
 {
+    switch (currentState)
+    {
+    case State::PLAYING:
+        updatePlayingLogic(deltaTime);
+        break;
+    case State::GAME_OVER:
+        if (scoreManager.score == 0)
+            return;
+        if (scoreManager.highScore.size() < scoreManager.maxHighScore || scoreManager.score > scoreManager.highScore.back().second)
+        {
+            std::string playerName;
+            std::cin >> playerName;
+            std::cin.clear();
+            char ch;
+            while (std::cin.get(ch) && ch != '\n');
+            if (playerName.length() > 10)
+            {
+                playerName = playerName.substr(0, 10);
+                playerName += "..";
+            }
+            scoreManager.highScore.push_back({ playerName, scoreManager.score });
+            std::sort(scoreManager.highScore.begin(), scoreManager.highScore.end(), [](const auto& a, const auto& b) {
+                return a.second > b.second; // Sắp xếp giảm dần
+                });
+            if (scoreManager.highScore.size() > scoreManager.maxHighScore)
+            {
+                scoreManager.highScore.pop_back();
+            }
+            currentState = State::HIGH_SCORES;
+            // Lưu điểm cao vào file
+            writeDataToBinaryFile(highScoreFilename, scoreManager.highScore);
+        }
+        break;
+    default:
+        // Các trạng thái khác không cần cập nhật logic game
+        break;
+    }
 }
 
 void Game::updatePlayingLogic(double deltaTime)
