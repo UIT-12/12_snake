@@ -113,20 +113,203 @@ void Game::handleMenuInput(KeyInput key)
     }
 }
 
+/*
+ * hàm xử lý input trong màn hình thay đổi độ khó
+ *
+ * phím mũi tên lên và xuống để thay đổi lựa chọn độ khó (difficultSelect) và không tác động đến độ khó game (currentDifficulty)
+ * phím enter để lưu lựa chọn độ khó vào currentDifficulty để thay đổi tốc độ chơi game thực và trở lại màn hình menu
+ * phím esc để đổi trạng thái thành menu và gán lại giá trị độ khó gốc cho difficultSelect để người dùng biết được độ khó mặc định
+ */
 void Game::handleDifficultSelectionInput(KeyInput key)
 {
+    switch (key)
+    {
+    case KeyInput::UP:
+        if (--difficultSelect == 0) difficultSelect = 3;
+        break;
+    case KeyInput::DOWN:
+        if (++difficultSelect == 4) difficultSelect = 1;
+        break;
+    case KeyInput::ENTER:
+        currentDifficulty = difficultSelect;
+        currentState = State::MENU;
+        break;
+    case KeyInput::ESC:
+        difficultSelect = currentDifficulty;
+        currentState = State::MENU;
+    }
 }
 
+/*
+ * xử lý input trong trạng thái chơi game (PLAYING)
+ *
+ * người dùng ấn phím mũi tên thì sẽ được lưu vào bộ nhớ tạm (inputQueue)
+ *      bộ nhớ sẽ lưu lại 3 phím nhấn mới nhất từ người dùng
+ *      nhằm fix lỗi mất phím khi người dùng ấn quá nhanh và hệ thống xử lý không kịp
+ *      đồng thời chỉ lưu trữ 3 phím để người dùng có thể dự đoán được hướng đi của rắn
+ *          nếu lưu trữ không giới hạn thì nếu người dùng ấn quá nhiều phím, thì rắn sẽ đi đến khi nào xử lý hết phím mới điều khiển tiếp được)
+ *
+ * người dùng nhấn phím ESC thì sẽ đưa sang trạng thái tạm dừng
+ *
+ */
 void Game::handlePlayingInput(KeyInput key)
 {
+    if (key == KeyInput::UP) inputQueue.push_back(Direction::UP);
+    if (key == KeyInput::DOWN) inputQueue.push_back(Direction::DOWN);
+    if (key == KeyInput::LEFT) inputQueue.push_back(Direction::LEFT);
+    if (key == KeyInput::RIGHT) inputQueue.push_back(Direction::RIGHT);
+    while (inputQueue.size() > 3) inputQueue.pop_front();
+    if (key == KeyInput::ESC) currentState = State::PAUSED;
 }
 
+/*
+ * hàm cập nhật logic của trò chơi (nhận dữ liệu deltaTime để tính toán trong hàm updatePlayingLogic)
+ *
+ * nếu đang ở trạng thái chơi game (PLAYING) thì gọi hàm updatePlayingLogic
+ *
+ * nếu đang ở trạng thái kết thúc trò chơi (GAME_OVER):
+ *      nếu người chơi không có điểm thì không thực hiện gì cả
+ *      nếu bảng điểm cao chưa đầy hoặc điểm người chơi lớn hơn điểm cuối cùng thì:
+ *          lưu tên người dùng (tối đa 10 ký tự),
+ *          sắp xếp lại bảng điểm cao giảm dần,
+ *          xóa tên người chơi cuối nếu bảng đầy
+ *          chuyển sang trạng thái điểm cao để xem bảng điểm
+ *
+ */
 void Game::updateLogic(double deltaTime)
 {
+    switch (currentState)
+    {
+    case State::PLAYING:
+        updatePlayingLogic(deltaTime);
+        break;
+    case State::GAME_OVER:
+        if (scoreManager.score == 0)
+            return;
+        if (scoreManager.highScore.size() < scoreManager.maxHighScore || scoreManager.score > scoreManager.highScore.back().second)
+        {
+            std::string playerName;
+            std::cin >> playerName;
+            std::cin.clear();
+            char ch;
+            while (std::cin.get(ch) && ch != '\n');
+            if (playerName.length() > 10)
+            {
+                playerName = playerName.substr(0, 10);
+                playerName += "..";
+            }
+            scoreManager.highScore.push_back({ playerName, scoreManager.score });
+            std::sort(scoreManager.highScore.begin(), scoreManager.highScore.end(), [](const auto& a, const auto& b) {
+                return a.second > b.second; // Sắp xếp giảm dần
+                });
+            if (scoreManager.highScore.size() > scoreManager.maxHighScore)
+            {
+                scoreManager.highScore.pop_back();
+            }
+            currentState = State::HIGH_SCORES;
+            // Lưu điểm cao vào file
+            writeDataToBinaryFile(highScoreFilename, scoreManager.highScore);
+        }
+        break;
+    default:
+        // Các trạng thái khác không cần cập nhật logic game
+        break;
+    }
 }
 
+/*
+ * hàm xử lý logic trong khi chơi game
+ *
+ * trong hàng đợi hướng, lấy hướng hợp lệ đầu tiên (khác với hướng hiện tại và hướng ngược lại hướng rắn đi)
+ * nếu có hướng hợp lệ mới thì cập nhật hướng vào class rắn
+ *
+ * lấy vị trí đuôi rắn -> cho rắn di chuyển -> lấy vị trí đầu rắn
+ * kiểm tra va chạm rắn sau khi di chuyển
+ * nếu rắn không lớn mà đi tiếp thì xóa đuôi rắn cũ
+ * cập nhật vị trí đầu rắn và đổi tên đầu rắn cũ thành thân rắn
+ *
+ * nếu rắn ăn được thức ăn thì rắn cộng 1 điểm, tăng tổng điểm người chơi, tăng tốc rắn, hiển thị thức ăn mới
+ *      hiển thị điểm cộng (bonus) nếu có
+ *
+ * nếu rắn ăn được điểm cộng thì rắn cộng 2 điểm, tăng tổng điểm người chơi, hủy điểm cộng cũ trên màn hình
+ *
+ * nếu hết thời gian mà chưa ăn được điểm cộng thì xóa điểm cộng trên màn hình
+ */
 void Game::updatePlayingLogic(double deltaTime)
 {
+    Direction currentDirection = snake->getDirection();
+    Direction wrongDirection = Direction::LEFT;
+    Direction newDirection = Direction::NONE;
+
+    switch (currentDirection)   // lấy hướng ngược lại hướng hiện tại của rắn
+    {
+    case Direction::UP: wrongDirection = Direction::DOWN; break;
+    case Direction::DOWN: wrongDirection = Direction::UP; break;
+    case Direction::LEFT: wrongDirection = Direction::RIGHT; break;
+    }
+    // Lấy hướng hợp lệ gần nhất từ hàng đợi
+    while (!inputQueue.empty()) {
+        Direction tempDirection = inputQueue.front();
+        inputQueue.pop_front();
+        // nếu hướng lấy ra khác hướng hiện tại hoặc khác hướng sai thì sử dụng hướng đó và thoát vòng lặp 
+        if (tempDirection != wrongDirection && tempDirection != currentDirection)
+        {
+            newDirection = tempDirection;
+            break;
+        }
+    }
+    // Nếu có hướng hợp lệ mới, cập nhật hướng của rắn
+    if (newDirection != Direction::NONE) {
+        snake->setDirection(newDirection);
+    }
+
+    // cho rắn di chuyển
+    Point tail = snake->getTail();  // lấy đuôi rắn
+    snake->move();                  // di chuyển rắn (cập nhật lại đầu rắn)
+    Point head = snake->getHead();  // lấy đầu rắn
+
+    // kiểm tra va chạm khi rắn di chuyển
+    checkCollision(head);
+
+    // nếu đuôi rắn có di chuyển thì xóa đuôi rắn
+    if (snake->isSnakeMove())
+    {
+        canvas[tail.y][tail.x] = CELL_TYPE::NONE;
+        snake->moveDone();
+    }
+
+    // cập nhật lại vị trí đầu rắn mới và đổi đầu rắn cũ thành thân rắn
+    canvas[head.y][head.x] = CELL_TYPE::SNAKE_HEAD;
+    canvas[snake->getBody().at(1).y][snake->getBody().at(1).x] = CELL_TYPE::SNAKE;
+
+    // kiểm tra tình trạng rắn ăn thức ăn 
+    if (head == food->getFoodPosition())
+    {
+        snake->addPoint(2);
+        if (currentSpeed > 1) currentSpeed -= 1;
+        scoreManager.score += scoreManager.foodScore * currentDifficulty;
+
+        food->spawnFood(canvas);
+        canvas[food->getFoodPosition().y][food->getFoodPosition().x] = CELL_TYPE::POINT;
+
+        if (scoreManager.score % scoreManager.bonusScore * currentDifficulty == 0)
+        {
+            food->spawnBonus(canvas);
+            canvas[food->getBonusPosition().y][food->getBonusPosition().x] = CELL_TYPE::POINT;
+        }
+    }
+
+    // kiểm tra tình trạng rắn ăn điểm cộng
+    if (food->isBonusActive() && head == food->getBonusPosition())
+    {
+        snake->addPoint(4);
+        food->deactivateBonus();
+        scoreManager.score += scoreManager.bonusScore * currentDifficulty;
+    }
+
+    // kiểm tra bonus point hết thời gian chưa để xóa
+    Point bonus_pos = food->refreshBonus(deltaTime);
+    if (bonus_pos.x != -1) canvas[bonus_pos.y][bonus_pos.x] = CELL_TYPE::NONE;
 }
 
 /*
