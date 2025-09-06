@@ -15,18 +15,79 @@ void Game::gameLoop()
     }
 }
 
+/*
+ * Hàm tính thời gian trôi qua kể từ last_time
+ * Trả về giá trị double tính theo millisecond (1/1000 giây)
+ * Sử dụng thư viện "chrono" để bắt được thời gian chuẩn theo millisecond
+ */
 double Game::timeNow()
 {
-	return 0.0;
+    currentTime = std::chrono::high_resolution_clock::now();
+    auto t_dif = currentTime.time_since_epoch() - lastTime.time_since_epoch();
+    return std::chrono::duration_cast<t_cast>(t_dif).count();
 }
 
 KeyInput Game::getKey()
 {
-	return KeyInput::ENTER;
+    char key = '\0';
+    KeyInput res = KeyInput::NONE;
+
+    if (_kbhit())
+    {
+        key = _getch();  // Đọc ký tự đầu tiên
+        if (key == -32 || key == 224) // Kiểm tra xem đó có phải là phím đặc biệt (như mũi tên) không
+        {
+            key = _getch();              // Đọc ký tự thứ hai để xác định phím cụ thể
+            switch (key)                 // Chuyển đổi mã phím mũi tên thành ký tự tương ứng
+            {
+            case 72: return KeyInput::UP;
+            case 80: return KeyInput::DOWN;
+            case 75: return KeyInput::LEFT;
+            case 77: return KeyInput::RIGHT;
+            }
+        }
+    }
+
+    switch (key)
+    {
+    case 'w':
+    case 'W': return KeyInput::UP;
+    case 's':
+    case 'S': return KeyInput::DOWN;
+    case 'a':
+    case 'A': return KeyInput::LEFT;
+    case 'd':
+    case 'D': return KeyInput::RIGHT;
+    case 13: return KeyInput::ENTER;
+    case 27: return KeyInput::ESC;
+    }
+
+    return res;
 }
 
+/*
+ * hàm kiểm tra va chạm
+ *
+ * nếu đầu rắn chạm tường hoặc tự chạm bản thân thì chuyển trạng thái game thành GAME_OVER
+ */
 void Game::checkCollision(const Point& point)
 {
+    if (point.x < 0 || point.x >= BOARD_WIDTH || point.y < 0 || point.y >= BOARD_HEIGHT)
+    {
+        currentState = State::GAME_OVER;
+        return;
+    }
+
+    if (canvas[point.y][point.x] == CELL_TYPE::WALL)
+    {
+        currentState = State::GAME_OVER;
+        return;
+    }
+
+    if (snake->checkSelfCollision())
+    {
+        currentState = State::GAME_OVER;
+    }
 }
 
 /*
