@@ -597,6 +597,7 @@ void Game::resetGame()
 
 void Game::vietSub()
 {
+    std::cout << "vietsub"
 }
 
 /*
