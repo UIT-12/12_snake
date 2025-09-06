@@ -27,6 +27,16 @@ double Game::timeNow()
     return std::chrono::duration_cast<t_cast>(t_dif).count();
 }
 
+/*
+ * Bắt các phím người dùng nhập vào bàn phím và trả về tên gọi của chúng
+ * Hàm xử lý được các phím: Enter, ESC, 4 phím mũi tên, W, A, S, D
+ * Nếu không có phím nào được nhập, hàm sẽ trả về NONE
+ *
+ * sử dụng thư viện conio.h
+ *      _kbhit() trả về true nếu có phím được nhấn
+ *      _getch() trả về ký tự được nhấn, tuy nhiên phím đặc biệt cần phải gọi 2 lần để biết chính xác phím nhấn là gì
+ *              ký tự đặc biệt bắt đầu với char(-32) hoặc char(
+ */
 KeyInput Game::getKey()
 {
     char key = '\0';
