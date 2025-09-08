@@ -1,14 +1,14 @@
 #include "Food.h"
 
 /*
- * hàm sinh ra thức ăn ở vị trí ngẫu nhiên trên bản đồ
+ * Hàm giúp xuất hiện thức ăn một cách ngẫu nhiên tại nhiều vị trí khác nhau trên bản đồ
  */
 void Food::spawnFood(const std::vector<std::vector<CELL_TYPE>>& grid)
 {
-	// Tạo thiết bị sinh số ngẫu nhiên
+	// Thiết kế bộ sinh số ngẫu nhiên
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	// Tạo danh sách các ô trống
+	// Khởi tạo một danh sách các ô trống
 	std::deque<Point> remain;
 	for (int y = 0; y < grid.size(); ++y)
 	{
@@ -18,22 +18,22 @@ void Food::spawnFood(const std::vector<std::vector<CELL_TYPE>>& grid)
 				remain.push_back({ x, y });
 		}
 	}
-	// Chọn ngẫu nhiên một ô trống
+	// Lựa chọn ngẫu nhiên một ô còn trống.
 	std::uniform_int_distribution<> dis(0, remain.size() - 1);
-	// Đặt vị trí thức ăn
+	// Đặt thức ăn vào một vị trí trên bản đồ
 	foodPosition = remain[dis(gen)];
 }
 
 /*
- * hàm sinh ra điểm cộng ở vị trí ngẫu nhiên trên bản đồ
- * điểm cộng chỉ xuất hiện trong một khoảng thời gian nhất định
+ * Hàm tạo điểm cộng tại các vị trí ngẫu nhiên trên bản đồ
+ * Điểm cộng chỉ xuất hiện trong một khoảng thời gian nhất định
  */
 void Food::spawnBonus(const std::vector<std::vector<CELL_TYPE>>& grid)
 {
-	// Tạo thiết bị sinh số ngẫu nhiên
+	// Tạo ra thiết bị sinh số ngẫu nhiên
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	// Tạo danh sách các ô trống
+	// Tạo ra danh sách các ô trống
 	std::deque<Point> remain;
 	for (int y = 0; y < grid.size(); ++y)
 	{
@@ -43,7 +43,7 @@ void Food::spawnBonus(const std::vector<std::vector<CELL_TYPE>>& grid)
 				remain.push_back({ x, y });
 		}
 	}
-	// Chọn ngẫu nhiên một ô trống
+	// Chọn ra ngẫu nhiên một ô trống
 	std::uniform_int_distribution<> dis(0, remain.size() - 1);
 	// Đặt vị trí điểm cộng
 	bonusPosition = remain[dis(gen)];
@@ -54,13 +54,13 @@ void Food::spawnBonus(const std::vector<std::vector<CELL_TYPE>>& grid)
 }
 
 /*
- * hàm cập nhật thời gian tồn tại của điểm cộng
- * nếu hết thời gian thì hủy điểm cộng
- * trả về vị trí điểm cộng nếu hết thời gian, ngược lại trả về {-1,-1}
+ * Hàm cập nhật thời gian tồn tại của điểm cộng
+ * Nếu hết thời gian thì hủy điểm cộng
+ * Trả về vị trí điểm cộng nếu hết thời gian, ngược lại trả về {-1,-1}
  */
 Point Food::refreshBonus(double elapsedMs)
 {
-	// lấy vị trí điểm cộng hiện tại
+	// Lấy vị trí điểm cộng hiện tại
 	Point bonus_pos = bonusPosition;
 
 	if (bonusActive)
