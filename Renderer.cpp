@@ -1,8 +1,8 @@
 ﻿#include "Renderer.h"
 
 /*
- * hàm xóa màn hình
- * đổi tất cả các ô trong screenBuffer về màu nền mặc định
+ * Hàm dùng để xóa nội dung trên màn hình
+ * Thiết lập lại màu nền mặc định cho toàn bộ các ô trong screenBuffer
  */
 void Renderer::clearScreen()
 {
@@ -12,10 +12,10 @@ void Renderer::clearScreen()
 }
 
 /*
- * hàm vẽ một khối tại vị trí cụ thể với màu cụ thể
+ * Hàm vẽ một khối tại vị trí cụ thể với màu cụ thể
  *
- * nếu vị trí y là số lẻ thì vẽ nửa trên của khối ở vị trí (x, y-1)
- * vẽ nửa dưới của khối ở vị trí (x, y)
+ * Nếu vị trí y là số lẻ thì vẽ nửa trên của khối ở vị trí (x, y-1)
+ * Vẽ nửa dưới của khối ở vị trí (x, y)
  */
 void Renderer::drawBlock(const Point& position, CELL_TYPE type)
 {
@@ -48,9 +48,9 @@ void Renderer::drawBlock(const Point& position, CELL_TYPE type)
 
 
 /*
- * hàm vẽ một chuỗi ký tự tại vị trí cụ thể với màu cụ thể
+ * Hàm vẽ một chuỗi ký tự tại vị trí cụ thể với màu cụ thể
  *
- * nếu vị trí vượt quá kích thước bảng thì dừng vẽ
+ * Nếu vị trí vượt quá kích thước bảng thì dừng vẽ
  */
 void Renderer::drawText(const std::string& text, const Point& position, const Color& color)
 {
@@ -65,9 +65,9 @@ void Renderer::drawText(const std::string& text, const Point& position, const Co
 }
 
 /*
- * hàm vẽ một ký tự tại vị trí cụ thể với màu cụ thể
+ * Hàm vẽ một ký tự tại vị trí cụ thể với màu cụ thể
  *
- * nếu vị trí vượt quá kích thước bảng thì dừng vẽ
+ * Nếu vị trí vượt quá kích thước bảng thì dừng vẽ
  */
 void Renderer::drawChar(const std::string& text, const Point& position, const Color& color)
 {
@@ -78,9 +78,9 @@ void Renderer::drawChar(const std::string& text, const Point& position, const Co
 }
 
 /*
- * hàm điền hình nền menu vào screenBuffer
+ * Hàm điền hình nền menu vào screenBuffer
  *
- * sử dụng mảng 2D bg_menu_r, bg_menu_g, bg_menu_b để lấy giá trị màu tương ứng
+ * Sử dụng mảng 2D bg_menu_r, bg_menu_g, bg_menu_b để lấy giá trị màu tương ứng
  */
 void Renderer::fillMenu()
 {
@@ -97,7 +97,7 @@ void Renderer::fillMenu()
 }
 
 /*
- * hàm hiển thị nội dung trong screen buffer lên màn hình console
+ * Hàm hiển thị nội dung trong screen buffer lên màn hình console
  *
  */
 void Renderer::present()
@@ -125,7 +125,7 @@ void Renderer::present()
 			frame_buffer << std::to_string(screenBuffer[last_point.y][last_point.x].b) << "m";
 			frame_buffer << screenBuffer[first_point.y][first_point.x].character;
 		}
-		// khôi phục màu nền và xuống dòng
+		// Khôi phục màu nền và xuống dòng
 		frame_buffer << RESET_COLOR;
 	}
 	// In toàn bộ frame_buffer
