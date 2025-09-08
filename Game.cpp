@@ -16,7 +16,7 @@ void Game::gameLoop()
 }
 
 /*
- * Hàm tính thời gian trôi qua kể từ last_time
+ * Hàm dùng để tính khoảng thời gian đã trôi qua kể từ last_time
  * Trả về giá trị double tính theo millisecond (1/1000 giây)
  * Sử dụng thư viện "chrono" để bắt được thời gian chuẩn theo millisecond
  */
@@ -28,7 +28,7 @@ double Game::timeNow()
 }
 
 /*
- * Bắt các phím người dùng nhập vào bàn phím và trả về tên gọi của chúng
+ * Ghi nhận thao tác bàn phím từ người dùng và xuất ra tên phím tương ứng
  * Hàm xử lý được các phím: Enter, ESC, 4 phím mũi tên, W, A, S, D
  * Nếu không có phím nào được nhập, hàm sẽ trả về NONE
  *
@@ -76,9 +76,9 @@ KeyInput Game::getKey()
 }
 
 /*
- * hàm kiểm tra va chạm
+ * Hàm dùng để kiểm tra các va chạm xảy ra
  *
- * nếu đầu rắn chạm tường hoặc tự chạm bản thân thì chuyển trạng thái game thành GAME_OVER
+ * Nếu đầu rắn chạm tường hoặc tự chạm bản thân thì chuyển trạng thái game thành GAME_OVER
  */
 void Game::checkCollision(const Point& point)
 {
@@ -101,21 +101,21 @@ void Game::checkCollision(const Point& point)
 }
 
 /*
- * tùy vào trạng thái trò chơi, hàm sẽ xử lý các phím nhấn theo các cách khác nhau
+ * Tùy vào trạng thái trò chơi, hàm sẽ xử lý các phím nhấn theo các cách khác nhau
  *
- * trạng thái MENU (màn hình menu):
+ * Trạng thái MENU (màn hình menu):
  *      gọi hàm xử lý input menu
  *
- * trạng thái PLAYING (màn hình chơi game):
+ * Trạng thái PLAYING (màn hình chơi game):
  *      gọi hàm xử lý input trò chơi
  *
- * trạng thái DIFFICULT_SELECTION (màn hình lựa chọn độ khó):
+ * Trạng thái DIFFICULT_SELECTION (màn hình lựa chọn độ khó):
  *      gọi hàm xử lý input lựa chọn độ khó
  *
- * trạng thái HIGH_SCORES (màn hình điểm cao), ABOUT (màn hình giới thiệu), GAME_OVER (màn hình kết thúc trò chơi):
+ * Trạng thái HIGH_SCORES (màn hình điểm cao), ABOUT (màn hình giới thiệu), GAME_OVER (màn hình kết thúc trò chơi):
  *      ấn enter hoặc esc để đổi sang trạng thái menu
  *
- * trạng thái PAUSED (tạm dừng):
+ * Trạng thái PAUSED (tạm dừng):
  *      ấn enter hoặc esc để đổi sang trạng thái chơi game
  *
  */
@@ -143,11 +143,11 @@ void Game::handleInput()
 }
 
 /*
- * hàm xử lý input trong màn hình menu
+ * Hàm xử lý input trong màn hình menu
  *
- * nhấn phím lên trên hoặc xuống dưới để đổi lựa chọn
+ * Nhấn phím lên trên hoặc xuống dưới để đổi lựa chọn
  *
- * nhấn phím enter:
+ * Nhấn phím enter:
  *      trò chơi mới: gọi hàm resetGame() để đưa các giá trị trong game thành mặc định và đổi trạng thái sang PLAYING
  *      điểm cao, giới thiệu, độ khó: đổi sang trạng thái HIGH_SCORES hoặc ABOUT hoặc DIFFICULTY_SELECTION
  *      thoát: gọi hàm exit(0) để thoát game và tắt console
@@ -185,11 +185,11 @@ void Game::handleMenuInput(KeyInput key)
 }
 
 /*
- * hàm xử lý input trong màn hình thay đổi độ khó
+ * Hàm xử lý input trong màn hình thay đổi độ khó
  *
- * phím mũi tên lên và xuống để thay đổi lựa chọn độ khó (difficultSelect) và không tác động đến độ khó game (currentDifficulty)
- * phím enter để lưu lựa chọn độ khó vào currentDifficulty để thay đổi tốc độ chơi game thực và trở lại màn hình menu
- * phím esc để đổi trạng thái thành menu và gán lại giá trị độ khó gốc cho difficultSelect để người dùng biết được độ khó mặc định
+ * Phím mũi tên lên và xuống để thay đổi lựa chọn độ khó (difficultSelect) và không tác động đến độ khó game (currentDifficulty)
+ * Phím enter để lưu lựa chọn độ khó vào currentDifficulty để thay đổi tốc độ chơi game thực và trở lại màn hình menu
+ * Phím esc để đổi trạng thái thành menu và gán lại giá trị độ khó gốc cho difficultSelect để người dùng biết được độ khó mặc định
  */
 void Game::handleDifficultSelectionInput(KeyInput key)
 {
@@ -212,15 +212,15 @@ void Game::handleDifficultSelectionInput(KeyInput key)
 }
 
 /*
- * xử lý input trong trạng thái chơi game (PLAYING)
+ * Xử lý input trong trạng thái chơi game (PLAYING)
  *
- * người dùng ấn phím mũi tên thì sẽ được lưu vào bộ nhớ tạm (inputQueue)
+ * Người dùng ấn phím mũi tên thì sẽ được lưu vào bộ nhớ tạm (inputQueue)
  *      bộ nhớ sẽ lưu lại 3 phím nhấn mới nhất từ người dùng
  *      nhằm fix lỗi mất phím khi người dùng ấn quá nhanh và hệ thống xử lý không kịp
  *      đồng thời chỉ lưu trữ 3 phím để người dùng có thể dự đoán được hướng đi của rắn
  *          nếu lưu trữ không giới hạn thì nếu người dùng ấn quá nhiều phím, thì rắn sẽ đi đến khi nào xử lý hết phím mới điều khiển tiếp được)
  *
- * người dùng nhấn phím ESC thì sẽ đưa sang trạng thái tạm dừng
+ * Người dùng nhấn phím ESC thì sẽ đưa sang trạng thái tạm dừng
  *
  */
 void Game::handlePlayingInput(KeyInput key)
@@ -234,11 +234,11 @@ void Game::handlePlayingInput(KeyInput key)
 }
 
 /*
- * hàm cập nhật logic của trò chơi (nhận dữ liệu deltaTime để tính toán trong hàm updatePlayingLogic)
+ * Hàm cập nhật logic của trò chơi (nhận dữ liệu deltaTime để tính toán trong hàm updatePlayingLogic)
  *
- * nếu đang ở trạng thái chơi game (PLAYING) thì gọi hàm updatePlayingLogic
+ * Nếu đang ở trạng thái chơi game (PLAYING) thì gọi hàm updatePlayingLogic
  *
- * nếu đang ở trạng thái kết thúc trò chơi (GAME_OVER):
+ * Nếu đang ở trạng thái kết thúc trò chơi (GAME_OVER):
  *      nếu người chơi không có điểm thì không thực hiện gì cả
  *      nếu bảng điểm cao chưa đầy hoặc điểm người chơi lớn hơn điểm cuối cùng thì:
  *          lưu tên người dùng (tối đa 10 ký tự),
@@ -289,7 +289,7 @@ void Game::updateLogic(double deltaTime)
 }
 
 /*
- * hàm xử lý logic trong khi chơi game
+ * Hàm xử lý logic trong khi chơi game
  *
  * trong hàng đợi hướng, lấy hướng hợp lệ đầu tiên (khác với hướng hiện tại và hướng ngược lại hướng rắn đi)
  * nếu có hướng hợp lệ mới thì cập nhật hướng vào class rắn
@@ -334,7 +334,7 @@ void Game::updatePlayingLogic(double deltaTime)
         snake->setDirection(newDirection);
     }
 
-    // cho rắn di chuyển
+    // Cho rắn di chuyển
     Point tail = snake->getTail();  // lấy đuôi rắn
     snake->move();                  // di chuyển rắn (cập nhật lại đầu rắn)
     Point head = snake->getHead();  // lấy đầu rắn
@@ -349,11 +349,11 @@ void Game::updatePlayingLogic(double deltaTime)
         snake->moveDone();
     }
 
-    // cập nhật lại vị trí đầu rắn mới và đổi đầu rắn cũ thành thân rắn
+    // Cập nhật lại vị trí đầu rắn mới và đổi đầu rắn cũ thành thân rắn
     canvas[head.y][head.x] = CELL_TYPE::SNAKE_HEAD;
     canvas[snake->getBody().at(1).y][snake->getBody().at(1).x] = CELL_TYPE::SNAKE;
 
-    // kiểm tra tình trạng rắn ăn thức ăn 
+    // Kiểm tra tình trạng rắn ăn thức ăn 
     if (head == food->getFoodPosition())
     {
         snake->addPoint(2);
@@ -386,7 +386,7 @@ void Game::updatePlayingLogic(double deltaTime)
 /*
  * tùy trạng thái mà render các màn hình khác nhau
  *
- * xóa màn hình
+ * Xoá màn hình
  * render các thành phần
  * việt hóa các ký tự tiếng việt
  * hiển thị nội dung vừa render lên màn hình
