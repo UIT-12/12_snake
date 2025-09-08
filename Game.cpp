@@ -460,7 +460,7 @@ void Game::renderGameOver()
     std::string score = "Diem: " + std::to_string(scoreManager.score);
     renderer->drawText("Tro choi ket thuc!", { xOffset + 5, yOffset }, DEFAULT_HIGHLIGHT_COLOR);
     renderer->drawText(score, { (int)(BOARD_WIDTH / 2 - score.length() / 2 - 2), yOffset + 4 }, DEFAULT_TEXT_COLOR);
-    if (scoreManager.score > 0 && (scoreManager.highScore.size() < 10 || scoreManager.score > scoreManager.highScore.back().second))
+    if (scoreManager.score > 0 && (scoreManager.highScore.size() < scoreManager.maxHighScore || scoreManager.score > scoreManager.highScore.back().second))
     {
         renderer->drawText("Ky luc moi! Nhap ten cua ban: ", { xOffset, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
     }
@@ -659,7 +659,7 @@ void Game::vietSub()
         renderer->drawChar("ú", { xOffset + 20, yOffset }, DEFAULT_HIGHLIGHT_COLOR);
         renderer->drawChar("Đ", { (int)(BOARD_WIDTH / 2 - score.length() / 2 - 2), yOffset + 4 }, DEFAULT_TEXT_COLOR);
         renderer->drawChar("ể", { (int)(BOARD_WIDTH / 2 - score.length() / 2), yOffset + 4 }, DEFAULT_TEXT_COLOR);
-        if (scoreManager.score > 0 && (scoreManager.highScore.size() < 10 || scoreManager.score > scoreManager.highScore.back().second))
+        if (scoreManager.score > 0 && (scoreManager.highScore.size() < scoreManager.maxHighScore || scoreManager.score > scoreManager.highScore.back().second))
         {
             renderer->drawChar("ỷ", { xOffset + 1, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
             renderer->drawChar("ụ", { xOffset + 4, yOffset + 24 }, DEFAULT_HIGHLIGHT_COLOR);
