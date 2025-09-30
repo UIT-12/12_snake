@@ -29,7 +29,40 @@ double Game::timeNow()
 
 KeyInput Game::getKey()
 {
-	return KeyInput();
+    char key = '\0';
+    KeyInput res = KeyInput::NONE;
+
+    if (_kbhit())
+    {
+        key = _getch();  // Đọc ký tự đầu tiên
+        if (key == -32 || key == 224) // Kiểm tra xem đó có phải là phím đặc biệt (như mũi tên) không
+        {
+            key = _getch();              // Đọc ký tự thứ hai để xác định phím cụ thể
+            switch (key)                 // Chuyển đổi mã phím mũi tên thành ký tự tương ứng
+            {
+            case 72: return KeyInput::UP;
+            case 80: return KeyInput::DOWN;
+            case 75: return KeyInput::LEFT;
+            case 77: return KeyInput::RIGHT;
+            }
+        }
+    }
+
+    switch (key)
+    {
+    case 'w':
+    case 'W': return KeyInput::UP;
+    case 's':
+    case 'S': return KeyInput::DOWN;
+    case 'a':
+    case 'A': return KeyInput::LEFT;
+    case 'd':
+    case 'D': return KeyInput::RIGHT;
+    case 13: return KeyInput::ENTER;
+    case 27: return KeyInput::ESC;
+    }
+
+    return res;
 }
 
 void Game::checkCollision(const Point& point)
