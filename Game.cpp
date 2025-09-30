@@ -15,9 +15,16 @@ void Game::gameLoop()
     }
 }
 
+/*
+ * Hàm tính thời gian trôi qua kể từ last_time
+ * Trả về giá trị double tính theo millisecond (1/1000 giây)
+ * Sử dụng thư viện "chrono" để bắt được thời gian chuẩn theo millisecond
+ */
 double Game::timeNow()
 {
-	return 0.0;
+    currentTime = std::chrono::high_resolution_clock::now();
+    auto t_dif = currentTime.time_since_epoch() - lastTime.time_since_epoch();
+    return std::chrono::duration_cast<t_cast>(t_dif).count();
 }
 
 KeyInput Game::getKey()
